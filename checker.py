@@ -106,17 +106,13 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
                 dv_has_value = True
                 break
 
-        # C列もD~V列も空の行はスキップ
-        if not c_has_value and not dv_has_value:
+        # C列に値がない行はスキップ
+        if not c_has_value:
             continue
 
         # C列に値があって D~V に値がない → 検証内容のみ記載のケースあり
-        if c_has_value and not dv_has_value:
+        if not dv_has_value:
             add_error(f"{row}行目: 検証内容のみ記載のケースがあります")
-
-        # C列に値がなく D~V に値がある → ケースIDなし
-        if not c_has_value and dv_has_value:
-            add_error(f"{row}行目: ケースIDがありません")
 
         # C列に値がある場合、Q列(実施日予定)・S列(検証日予定)が必須
         if c_has_value:
