@@ -58,33 +58,33 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
             "full_path": file_path,
         })
 
-    # D5 に値が入っていること
+    # D5: シナリオ番号
     if is_empty(get_cell_value(ws, 5, col_letter_to_num("D"))):
-        add_error("D5 に値が入っていません")
+        add_error("シナリオ番号が未入力です")
 
-    # E5 に値が入っていること
+    # E5: タイトル
     if is_empty(get_cell_value(ws, 5, col_letter_to_num("E"))):
-        add_error("E5 に値が入っていません")
+        add_error("タイトルが未入力です")
 
-    # E8 に値が入っていること
+    # E8: 概要
     if is_empty(get_cell_value(ws, 8, col_letter_to_num("E"))):
-        add_error("E8 に値が入っていません")
+        add_error("概要が未入力です")
 
-    # T5 に値が入っていること
+    # T5: テストケース作成日
     if is_empty(get_cell_value(ws, 5, col_letter_to_num("T"))):
-        add_error("T5 に値が入っていません")
+        add_error("テストケース作成日が未入力です")
 
-    # T6 に値が入っていること
+    # T6: テストケース作成者
     if is_empty(get_cell_value(ws, 6, col_letter_to_num("T"))):
-        add_error("T6 に値が入っていません")
+        add_error("テストケース作成者が未入力です")
 
-    # T7 に値が入っていること
+    # T7: テスト実施者
     if is_empty(get_cell_value(ws, 7, col_letter_to_num("T"))):
-        add_error("T7 に値が入っていません")
+        add_error("テスト実施者が未入力です")
 
-    # T8 に値が入っていること
+    # T8: テスト検証者
     if is_empty(get_cell_value(ws, 8, col_letter_to_num("T"))):
-        add_error("T8 に値が入っていません")
+        add_error("テスト検証者が未入力です")
 
     # 19行目以降のデータ検証
     col_c = col_letter_to_num("C")
@@ -110,33 +110,30 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
         if not c_has_value and not dv_has_value:
             continue
 
-        # C列に値があって D~V に値がない行が存在しないこと
+        # C列に値があって D~V に値がない → 検証内容のみ記載のケースあり
         if c_has_value and not dv_has_value:
-            add_error(f"{row}行目: C列に値がありますが、D~V列に値がありません")
+            add_error(f"{row}行目: 検証内容のみ記載のケースがあります")
 
-        # C列に値がなく D~V に値がある行が存在しないこと
+        # C列に値がなく D~V に値がある → ケースIDなし
         if not c_has_value and dv_has_value:
-            add_error(f"{row}行目: C列に値がありませんが、D~V列に値があります")
+            add_error(f"{row}行目: ケースIDがありません")
 
-        # C列に値がある場合、Q,S列にも値があること
+        # C列に値がある場合、Q列(実施日予定)・S列(検証日予定)が必須
         if c_has_value:
             q_val = get_cell_value(ws, row, col_q)
             s_val = get_cell_value(ws, row, col_s)
-            if is_empty(q_val) or is_empty(s_val):
-                missing = []
-                if is_empty(q_val):
-                    missing.append("Q")
-                if is_empty(s_val):
-                    missing.append("S")
-                add_error(f"{row}行目: C列に値がありますが、{','.join(missing)}列に値がありません")
+            if is_empty(q_val):
+                add_error(f"{row}行目: ケースIDがあるのに実施日（予定）が未入力です")
+            if is_empty(s_val):
+                add_error(f"{row}行目: ケースIDがあるのに検証日（予定）が未入力です")
 
-        # C列に値がありO列がハイフン(-)の場合、V列に値があること
+        # C列に値がありO列がハイフン(-)の場合、V列も必須
         if c_has_value:
             o_val = get_cell_value(ws, row, col_o)
             if isinstance(o_val, str) and o_val.strip() == "-":
                 v_val = get_cell_value(ws, row, col_v)
                 if is_empty(v_val):
-                    add_error(f"{row}行目: O列がハイフン(-)ですが、V列に値がありません")
+                    add_error(f"{row}行目: 実施対象外ケースの場合は欠陥内容／備考欄に理由を記載してください")
 
     return errors
 
