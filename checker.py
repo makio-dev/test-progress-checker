@@ -114,8 +114,12 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
         if not dv_has_value:
             add_error(f"{row}行目: 検証内容のみ記載のケースがあります")
 
-        # C列に値がある場合、Q列(実施日予定)・S列(検証日予定)が必須
-        if c_has_value:
+        # O列の値を取得（ハイフンかどうかで後続チェックが変わる）
+        o_val = get_cell_value(ws, row, col_o)
+        is_excluded = isinstance(o_val, str) and o_val.strip() == "-"
+
+        # C列に値がある場合、Q列(実施日予定)・S列(検証日予定)が必須（O列がハイフンの場合は除外）
+        if c_has_value and not is_excluded:
             q_val = get_cell_value(ws, row, col_q)
             s_val = get_cell_value(ws, row, col_s)
             if is_empty(q_val):
@@ -124,8 +128,7 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
                 add_error(f"{row}行目: ケースIDがあるのに検証日（予定）が未入力です")
 
         # C列に値がありO列がハイフン(-)の場合、V列も必須
-        if c_has_value:
-            o_val = get_cell_value(ws, row, col_o)
+        if c_has_value and is_excluded:
             if isinstance(o_val, str) and o_val.strip() == "-":
                 v_val = get_cell_value(ws, row, col_v)
                 if is_empty(v_val):
