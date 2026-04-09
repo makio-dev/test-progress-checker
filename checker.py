@@ -96,7 +96,7 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
 
     max_row = ws.max_row or 18
     for row in range(19, max_row + 1):
-        c_val = get_cell_raw_value(ws, row, col_c)
+        c_val = get_cell_value(ws, row, col_c)
         c_has_value = not is_empty(c_val)
 
         # D~V列に値があるか確認
@@ -105,6 +105,10 @@ def validate_sheet(ws, sheet_name, file_path, file_name):
             if not is_empty(get_cell_value(ws, row, col)):
                 dv_has_value = True
                 break
+
+        # C列もD~V列も空の行はスキップ
+        if not c_has_value and not dv_has_value:
+            continue
 
         # C列に値があって D~V に値がない行が存在しないこと
         if c_has_value and not dv_has_value:
@@ -143,7 +147,7 @@ def validate_file(file_path):
     file_name = os.path.basename(file_path)
 
     try:
-        wb = openpyxl.load_workbook(file_path, data_only=False)
+        wb = openpyxl.load_workbook(file_path, data_only=True)
     except Exception as e:
         return [{
             "error": f"ファイルを開けません: {e}",
